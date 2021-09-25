@@ -24,26 +24,6 @@ namespace WordsWithFriends
 
 		public static Position MoveLeft(this Position position) =>
 			position.Move(0, -1);
-
-		public static IEnumerable<Position> GetAdjacentPositions(this Position position)
-		{
-			if(position.Row > 0)
-			{
-				yield return position.Move(-1, 0);
-			}
-			if(position.Row < (BoardDimensions.Height -2))
-			{
-				yield return position.Move(1, 0);
-			}
-			if(position.Column > 0)
-			{
-				yield return position.Move(0, -1);
-			}
-			if(position.Column < (BoardDimensions.Width - 2))
-			{
-				yield return position.Move(0, 1);
-			}
-		}
 	}
 
 }

@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WordsWithFriends
+﻿namespace WordsWithFriends
 {
+	using System.Collections.Generic;
+
 	public sealed class Board
 	{
-		private readonly char[,] _chars = new char[BoardDimensions.Height, BoardDimensions.Width];
+		private readonly char[,] _chars;
 		public void Place(WordPlacement wordPlacement)
 		{
 			Position pos = wordPlacement.Position;
@@ -26,6 +22,13 @@ namespace WordsWithFriends
 		public char CharAt(Position position) =>
 			_chars[position.Row, position.Column];
 
+		public readonly BoardDimensions Dimensions;
+
+		public Board(BoardDimensions dimensions)
+		{
+			this.Dimensions = dimensions;
+			this._chars = new char[dimensions.Rows, dimensions.Columns];
+		}
 	}
 
 	public static class BoardExtensions
@@ -54,7 +57,7 @@ namespace WordsWithFriends
 			string result = string.Empty;
 			while (true)
 			{
-				if (position.Row == BoardDimensions.Height - 1)
+				if (position.Row == board.Dimensions.Rows - 1)
 				{
 					return result;
 				}
@@ -73,7 +76,7 @@ namespace WordsWithFriends
 			string result = string.Empty;
 			while (true)
 			{
-				if (position.Column == BoardDimensions.Width - 1)
+				if (position.Column == board.Dimensions.Columns - 1)
 				{
 					return result;
 				}
@@ -103,6 +106,26 @@ namespace WordsWithFriends
 					return result;
 				}
 				result = $"{c}{result}";
+			}
+		}
+
+		public static IEnumerable<Position> GetAdjacentPositions(this Board board, Position position)
+		{
+			if (position.Row > 0)
+			{
+				yield return position.Move(-1, 0);
+			}
+			if (position.Row < (board.Dimensions.Rows - 2))
+			{
+				yield return position.Move(1, 0);
+			}
+			if (position.Column > 0)
+			{
+				yield return position.Move(0, -1);
+			}
+			if (position.Column < (board.Dimensions.Columns - 2))
+			{
+				yield return position.Move(0, 1);
 			}
 		}
 	}

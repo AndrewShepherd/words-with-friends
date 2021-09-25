@@ -9,7 +9,7 @@ namespace WordsWithFriends
 		[Test]
 		public void SimpleTest()
 		{
-			var board = new Board();
+			var board = new Board(new BoardDimensions(11, 11));
 			foreach (var wordPlacement in new[]
 			{
 				new WordPlacement

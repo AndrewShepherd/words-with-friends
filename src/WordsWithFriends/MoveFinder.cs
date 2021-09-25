@@ -5,11 +5,11 @@
 	using System.Linq;
 	public sealed class MoveFinder
 	{
-		private static IEnumerable<Position> GetAllBoardPositions()
+		private static IEnumerable<Position> GetAllBoardPositions(BoardDimensions dimensions)
 		{
-			for(int r = 0; r < BoardDimensions.Height; ++r)
+			for(int r = 0; r < dimensions.Rows; ++r)
 			{
-				for(int c = 0; c < BoardDimensions.Width; ++c)
+				for(int c = 0; c < dimensions.Columns; ++c)
 				{
 					yield return new Position(r, c);
 				}
@@ -23,13 +23,13 @@
 			{
 				return false;
 			}
-			return p.GetAdjacentPositions()
+			return board.GetAdjacentPositions(p)
 				.Select(p => board.CharAt(p))
 				.Any(c => c != default);
 		}
 
 		private static IEnumerable<Position> GetPotentialWordPlacementPositions(Board board) =>
-			GetAllBoardPositions()
+			GetAllBoardPositions(board.Dimensions)
 				.Where(p => IsBlankAndAdjacentToChar(board, p));
 
 
@@ -96,7 +96,7 @@
 
 		private IEnumerable<ExtensionResult> ExtendRight(Board board, TileBag tileBag, Position position, string leftString)
 		{
-			if (position.Column >= BoardDimensions.Width)
+			if (position.Column >= board.Dimensions.Columns)
 			{
 				yield break;
 			}
