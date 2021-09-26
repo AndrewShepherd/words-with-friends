@@ -233,7 +233,7 @@
 							minLeft,
 							board.GetStringToRightOf(position),
 							ImmutableList<TilePlacement>.Empty,
-							ImmutableList<PlacedTile>.Empty,
+							ImmutableList<PlacedTile>.Empty.AddRange(board.GetTilesToRightOf(position)),
 							0
 						)
 					)

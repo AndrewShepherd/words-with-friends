@@ -22,6 +22,11 @@
 			}
 		}
 
+		public void Place(TilePlacement tilePlacement)
+		{
+			this._placedTiles[tilePlacement.Position.Row, tilePlacement.Position.Column] = tilePlacement.PlacedTile;
+		}
+
 		internal void SetBonus(Position position, SquareBonus squareBonus)
 		{
 			this._squareBonuses[position.Row, position.Column] = squareBonus;
@@ -33,6 +38,9 @@
 
 		public PlacedTile? TileAt(Position position) =>
 			_placedTiles[position.Row, position.Column];
+
+		public SquareBonus SquareBonusAt(Position position) =>
+			_squareBonuses[position.Row, position.Column];
 
 		public readonly BoardDimensions Dimensions;
 
@@ -189,12 +197,30 @@
 
 		public static int CalculateScore(this Board board, IEnumerable<TilePlacement> tilePlacements, IEnumerable<PlacedTile> alreadyPlaced)
 		{
-			var total = tilePlacements.Select(tp => tp.PlacedTile)
-				.Concat(alreadyPlaced)
-				.Select(tp => tp.TileChar)
-				.Select(c => CharacterScore(c))
+			var placedCharacterScore = alreadyPlaced
+				.Select(t => CharacterScore(t.TileChar))
 				.Sum();
-			return total;
+			var characterBasedBonus = 0;
+			var multiplier = 1;
+			foreach(var tp in tilePlacements)
+			{
+				var tileCharacterScore = CharacterScore(tp.PlacedTile.TileChar);
+				var squareBonus = board.SquareBonusAt(tp.Position);
+				characterBasedBonus += squareBonus switch
+				{
+					SquareBonus.DoubleLetter => tileCharacterScore,
+					SquareBonus.TripleLetter => tileCharacterScore * 2,
+					_ => 0
+				};
+				multiplier *= squareBonus switch
+				{
+					SquareBonus.DoubleWord => 2,
+					SquareBonus.TripleWord => 3,
+					_ => 1
+				};
+				placedCharacterScore += tileCharacterScore;
+			}
+			return placedCharacterScore * multiplier + characterBasedBonus;
 		}
 	}
 }

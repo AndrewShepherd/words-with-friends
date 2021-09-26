@@ -15,63 +15,64 @@ namespace WordsWithFriends
 				new WordPlacement
 				{
 					Direction = Direction.Across,
-					Word = "quoin",
-					Position = new Position(5, 2)
+					Word = "aneles",
+					Position = new Position(5, 0)
 				},
 				new WordPlacement
 				{
 					Direction = Direction.Across,
-					Word = "seizer",
-					Position = new Position(4, 5)
+					Word = "ibe",
+					Position = new Position(4, 1)
 				},
 				new WordPlacement
 				{
 					Direction = Direction.Down,
-					Word = "roseate",
-					Position = new Position(4, 10)
+					Word = "jings",
+					Position = new Position(1, 5)
 				},
 				new WordPlacement
 				{
 					Direction = Direction.Across,
-					Word = "debye",
-					Position = new Position(10, 6)
+					Word = "om",
+					Position = new Position(3, 2)
 				},
 				new WordPlacement
 				{
 					Direction = Direction.Down,
-					Word = "may",
-					Position = new Position(8, 9)
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Word = "sex",
-					Position = new Position(6, 3)
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Down,
-					Word = "lathis",
-					Position = new Position(0, 7)
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Word = "pavan",
+					Word = "etui",
 					Position = new Position(1, 6)
 				},
 				new WordPlacement
 				{
 					Direction = Direction.Across,
-					Word = "wilco",
-					Position = new Position(9, 2)
+					Word = "zitis",
+					Position = new Position(2, 4)
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Word = "aerobe",
+					Position = new Position(0, 2)
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Across,
+					Word = "kor",
+					Position = new Position(2, 0)
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Across,
+					Word = "seq",
+					Position = new Position(1, 1)
 				}
 			})
 			{
 				board.Place(wordPlacement);
 			}
+			board.Place(new TilePlacement(new Position(4, 0), new PlacedTile('?', 'k')));
 			var moveFinder = new MoveFinder();
-			IEnumerable<Move> moves = moveFinder.ListAll(board, "trikfig").ToList();
+			IEnumerable<Move> moves = moveFinder.ListAll(board, "fwdatev").ToList();
 			Assert.That(moves.Count(), Is.GreaterThan(0));
 			Assert.That(moves.Count(), Is.EqualTo(moves.Distinct().Count()));
 			var sortedMoves = moves.OrderByDescending(m => m.Score).ToList();
