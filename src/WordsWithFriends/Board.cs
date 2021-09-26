@@ -6,6 +6,7 @@
 	public sealed class Board
 	{
 		private readonly PlacedTile?[,] _placedTiles;
+		private readonly SquareBonus[,] _squareBonuses;
 		public void Place(WordPlacement wordPlacement)
 		{
 			Position pos = wordPlacement.Position;
@@ -21,6 +22,11 @@
 			}
 		}
 
+		internal void SetBonus(Position position, SquareBonus squareBonus)
+		{
+			this._squareBonuses[position.Row, position.Column] = squareBonus;
+		}
+
 		public char CharAt(Position position) =>
 			TileAt(position)?.EffectiveChar ?? default;
 
@@ -34,6 +40,7 @@
 		{
 			this.Dimensions = dimensions;
 			this._placedTiles = new PlacedTile[dimensions.Rows, dimensions.Columns];
+			this._squareBonuses = new SquareBonus[dimensions.Rows, dimensions.Columns];
 		}
 	}
 

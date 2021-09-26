@@ -9,7 +9,7 @@ namespace WordsWithFriends
 		[Test]
 		public void ActualGame()
 		{
-			var board = new Board(new BoardDimensions(11, 11));
+			var board = BoardBuilder.ConstructSmallBoard();
 			foreach (var wordPlacement in new[]
 			{
 				new WordPlacement
