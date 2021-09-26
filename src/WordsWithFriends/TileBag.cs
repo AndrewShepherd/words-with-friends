@@ -17,13 +17,13 @@ namespace WordsWithFriends
 			_blankTileCount = blankTileCount;
 		}
 
-		public IEnumerable<char> GetAvailableCharacters()
+		public IEnumerable<PlacedTile> GetAvailableCharacters()
 		{
 			if(_blankTileCount > 0)
 			{
 				for(char c = 'a'; c <= 'z'; ++c)
 				{
-					yield return c;
+					yield return new PlacedTile(' ', c);
 				}
 			}
 			else
@@ -32,19 +32,22 @@ namespace WordsWithFriends
 				{
 					if(_characters[i] > 0)
 					{
-						yield return (char)('a' + i);
+						char c = (char)('a' + i);
+						yield return new PlacedTile(c, c); ;
 					}
 				}
 			}
 		}
 
-		public TileBag Remove(char c)
+		public TileBag Remove(PlacedTile placedTile)
 		{
-			var chars = (char[])this._characters.Clone();
-			var index = (int)(c - 'a');
+			var chars = (char[])this._characters;
 			var blankTileCount = this._blankTileCount;
-			if(chars[index] > 0)
+			if(Char.IsLetter(placedTile.TileChar))
 			{
+				var index = (int)(placedTile.TileChar - 'a');
+				chars = (char[])this._characters.Clone();
+
 				--chars[index];
 			}
 			else
