@@ -50,6 +50,17 @@
 			this._placedTiles = new PlacedTile[dimensions.Rows, dimensions.Columns];
 			this._squareBonuses = new SquareBonus[dimensions.Rows, dimensions.Columns];
 		}
+
+		public PlacedTile?[] GetRow(int row)
+		{
+			PlacedTile?[] rv = new PlacedTile?[this.Dimensions.Columns];
+			for(int col = 0; col < this.Dimensions.Columns; ++col)
+			{
+				rv[col] = this._placedTiles[row, col];
+			}
+			return rv;
+
+		}
 	}
 
 	public static class BoardExtensions

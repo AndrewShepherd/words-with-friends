@@ -16,7 +16,10 @@ namespace WordsWithFriends
 		{
 			var assembly = Assembly.GetExecutingAssembly();
 			using var stream = assembly.GetManifestResourceStream(DictionaryResourceName);
-
+			if(stream == null)
+			{
+				throw new Exception("Unable to load the resource dictionary");
+			}
 			using var streamReader = new StreamReader(stream);
 			while (!streamReader.EndOfStream)
 			{

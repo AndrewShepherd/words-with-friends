@@ -75,11 +75,12 @@ namespace WordsWithFriends
 			IEnumerable<Move> moves = moveFinder.ListAll(board, "fwdatev").ToList();
 			Assert.That(moves.Count(), Is.GreaterThan(0));
 			Assert.That(moves.Count(), Is.EqualTo(moves.Distinct().Count()));
-			var sortedMoves = moves.OrderByDescending(m => m.Score).ToList();
+			var sortedByScore = moves.OrderByDescending(m => m.Score).ToList();
+			Assert.That(sortedByScore.First().WordSegment, Is.EqualTo("jete"));
+			Assert.That(sortedByScore.First().Score, Is.EqualTo(17));
 
-			// First word SEPT, scores 7 + 6 + 4 = 17
-			// Second word STEP scores 7 + 6 = 13
-			// Thirds word QUOINS, should score 18
+			var sortedByLength = moves.OrderByDescending(m => m.WordSegment.Length).ToList();
+			Assert.That(sortedByLength.First().WordSegment, Is.EqualTo("gifted"));
 		}
 
 		[Test]
