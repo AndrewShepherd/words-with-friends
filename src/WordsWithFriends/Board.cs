@@ -231,7 +231,7 @@
 				};
 				placedCharacterScore += tileCharacterScore;
 			}
-			return placedCharacterScore * multiplier + characterBasedBonus;
+			return placedCharacterScore * multiplier + characterBasedBonus * multiplier;
 		}
 	}
 }
