@@ -200,7 +200,7 @@
 			var crossTester = GenerateHorizontalCrossTester(
 				board,
 				position,
-				extensionSoFar.TilePlacements,
+				Enumerable.Empty<TilePlacement>(),
 				s => s == WordSegmentValidity.CompleteWord
 			);
 			var lengthwaysTester = GenerateVerticalCrossTester(
@@ -224,7 +224,7 @@
 				}
 				var extensionResult = new ExtensionResult(
 					$"{aboveString}{c.EffectiveChar}{extensionSoFar.WordSegment}",
-					position.Move(-1, 0),
+					position.Move(0-aboveString.Length, 0),
 					extensionSoFar.RemainingTiles.Remove(c),
 					extensionSoFar.TilePlacements.Add(new TilePlacement(position, c)),
 					extensionSoFar.IncludedTiles.AddRange(aboveIncludedTiles),
@@ -244,6 +244,71 @@
 			}
 			yield break;
 		}
+
+		private IEnumerable<ExtensionResult> ExtendDown(
+				Board board,
+				Position position,
+				Func<Position, bool> continuePredicate,
+				ExtensionResult extensionSoFar
+			)
+		{
+			if (!continuePredicate(position))
+			{
+				yield break;
+			}
+			char charAtPosition = board.CharAt(position);
+			if (charAtPosition != default)
+			{
+				throw new Exception("This should not happen");
+			}
+			var crossTester = GenerateHorizontalCrossTester(
+				board,
+				position,
+				Enumerable.Empty<TilePlacement>(),
+				s => s == WordSegmentValidity.CompleteWord
+			);
+			var lengthwaysTester = GenerateVerticalCrossTester(
+				board,
+				position,
+				s => s != WordSegmentValidity.Invalid
+			);
+			var belowString = board.GetStringBelow(position);
+			var belowIncludedTiles = board.GetTilesBelow(position);
+			foreach (var c in extensionSoFar.RemainingTiles.GetAvailableCharacters())
+			{
+				(bool crossSuccess, int thisCrossScore) = crossTester(c);
+				if (!crossSuccess)
+				{
+					continue;
+				}
+				(bool lengthwaysSuccess, int lengthwaysScore) = lengthwaysTester(c);
+				if (!lengthwaysSuccess)
+				{
+					continue;
+				}
+				var extensionResult = new ExtensionResult(
+					$"{extensionSoFar.WordSegment}{c.EffectiveChar}{belowString}",
+					position.Move(0-extensionSoFar.WordSegment.Length, 0),
+					extensionSoFar.RemainingTiles.Remove(c),
+					extensionSoFar.TilePlacements.Add(new TilePlacement(position, c)),
+					extensionSoFar.IncludedTiles.AddRange(belowIncludedTiles),
+					extensionSoFar.AccumulatedCrossScore + thisCrossScore
+				);
+				yield return extensionResult;
+				foreach (var futher in ExtendDown(
+					board,
+					position.Move(0 + belowString.Length + 1, 0),
+					continuePredicate,
+					extensionResult
+				))
+				{
+					yield return futher;
+				}
+
+			}
+			yield break;
+		}
+
 
 		private IEnumerable<ExtensionResult> ExtendLeft(
 			Board board,
@@ -485,6 +550,25 @@
 							Direction.Down
 						);
 					}
+					foreach (
+							var wordSegment2 in ExtendDown(
+								board,
+								position.Move(board.GetStringBelow(position).Length + 1, 0),
+								position => position.Row < board.Dimensions.Rows,
+								extendUpStep
+							)
+)
+					{
+						if (_wordSegmentLookup.Evaluate(wordSegment2.WordSegment) == WordSegmentValidity.CompleteWord)
+						{
+							yield return new Move(
+								wordSegment2.StartPosition,
+								wordSegment2.WordSegment,
+								Score(board, wordSegment2),
+								Direction.Down
+							);
+						}
+					}
 				}
 				minRow = position.Row + 1;
 			}
@@ -502,7 +586,7 @@
 			foreach(var row in groupedByRows)
 			{
 				var positions = row.OrderBy(p => p.Column);
-				foreach(var move in ListAllForRow(board, tileBag, positions))
+				foreach (var move in ListAllForRow(board, tileBag, positions))
 				{
 					yield return move;
 				}

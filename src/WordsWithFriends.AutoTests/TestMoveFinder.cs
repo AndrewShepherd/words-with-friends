@@ -14,73 +14,75 @@ namespace WordsWithFriends
 			{
 				new WordPlacement
 				{
+					Direction = Direction.Down,
+					Word = "josh",
+					Position = new Position(2, 5)
+				},
+				new WordPlacement
+				{
 					Direction = Direction.Across,
-					Word = "aneles",
+					Word = "planchettes",
 					Position = new Position(5, 0)
 				},
 				new WordPlacement
 				{
-					Direction = Direction.Across,
-					Word = "ibe",
-					Position = new Position(4, 1)
+					Direction = Direction.Down,
+					Word = "beet",
+					Position = new Position(2, 7)
 				},
 				new WordPlacement
 				{
 					Direction = Direction.Down,
-					Word = "jings",
-					Position = new Position(1, 5)
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Word = "om",
-					Position = new Position(3, 2)
+					Word = "makeup",
+					Position = new Position(0, 0)
 				},
 				new WordPlacement
 				{
 					Direction = Direction.Down,
-					Word = "etui",
-					Position = new Position(1, 6)
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Word = "zitis",
-					Position = new Position(2, 4)
+					Word = "dewing",
+					Position = new Position(1,3)
 				},
 				new WordPlacement
 				{
 					Direction = Direction.Down,
-					Word = "aerobe",
+					Word = "oxide",
+					Position = new Position(1, 9)
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Word = "fay",
 					Position = new Position(0, 2)
 				},
 				new WordPlacement
 				{
-					Direction = Direction.Across,
-					Word = "kor",
-					Position = new Position(2, 0)
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Word = "seq",
-					Position = new Position(1, 1)
+					Direction = Direction.Down,
+					Word = "via",
+					Position = new Position(0, 6)
 				}
+				// ,
+				//new WordPlacement
+				//{
+				//	Direction = Direction.Across,
+				//	Word = "jar",
+				//	Position = new Position
+				//}
 			})
 			{
 				board.Place(wordPlacement);
 			}
-			board.Place(new TilePlacement(new Position(4, 0), new PlacedTile('?', 'k')));
+			board.Place(new TilePlacement(new Position(5, 4), new PlacedTile('?', 'c')));
+			board.Place(new TilePlacement(new Position(5, 8), new PlacedTile('?', 't')));
 			var moveFinder = new MoveFinder();
-			IEnumerable<Move> moves = moveFinder.ListAll(board, "fwdatev").ToList();
+			IEnumerable<Move> moves = moveFinder.ListAll(board, "reoioar").ToList();
 			Assert.That(moves.Count(), Is.GreaterThan(0));
 			//Assert.That(moves.Count(), Is.EqualTo(24));
 			var sortedByScore = moves.OrderByDescending(m => m.Score).ToList();
-			Assert.That(sortedByScore.First().WordSegment, Is.EqualTo("jete"));
-			Assert.That(sortedByScore.First().Score, Is.EqualTo(17));
+			Assert.That(sortedByScore.First().WordSegment, Is.EqualTo("raver"));
+			Assert.That(sortedByScore.First().Score, Is.EqualTo(27));
 
 			var sortedByLength = moves.OrderByDescending(m => m.WordSegment.Length).ToList();
-			Assert.That(sortedByLength.First().WordSegment, Is.EqualTo("gifted"));
+			Assert.That(sortedByLength.First().WordSegment, Is.EqualTo("saithe"));
 		}
 
 		[Test]
