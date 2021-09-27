@@ -3,6 +3,7 @@
 	public record Move(
 		Position Position,
 		string WordSegment,
-		int Score
+		int Score,
+		Direction Direction
 	);
 }
