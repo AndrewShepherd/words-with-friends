@@ -456,6 +456,7 @@
 					extensionResult.IncludedTiles
 				);
 
+
 		private IEnumerable<Move> ListAllForRow(
 			Board board,
 			TileBag tileBag,

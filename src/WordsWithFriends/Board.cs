@@ -231,7 +231,10 @@
 				};
 				placedCharacterScore += tileCharacterScore;
 			}
-			return placedCharacterScore * multiplier + characterBasedBonus * multiplier;
+			return 
+				placedCharacterScore * multiplier + 
+				characterBasedBonus * multiplier + 
+				(tilePlacements.Count() == 7 ? 35 : 0);
 		}
 	}
 }
