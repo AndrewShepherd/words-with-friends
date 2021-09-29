@@ -59,7 +59,16 @@
 				rv[col] = this._placedTiles[row, col];
 			}
 			return rv;
+		}
 
+		public PlacedTile?[] GetColumn(int col)
+		{
+			PlacedTile?[] rv = new PlacedTile?[this.Dimensions.Rows];
+			for (int row = 0; row < this.Dimensions.Rows; ++row)
+			{
+				rv[row] = this._placedTiles[row, col];
+			}
+			return rv;
 		}
 	}
 
@@ -235,6 +244,14 @@
 				placedCharacterScore * multiplier + 
 				characterBasedBonus * multiplier + 
 				(tilePlacements.Count() == 7 ? 35 : 0);
+		}
+
+		public static void Accept(this Board board, Move move)
+		{
+			foreach (var tilePlacement in move.TilePlacements)
+			{
+				board.Place(tilePlacement);
+			}
 		}
 	}
 }

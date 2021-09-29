@@ -82,255 +82,236 @@ namespace WordsWithFriends
 			Assert.That(sortedByScore.First().Score, Is.EqualTo(27));
 
 			var sortedByLength = moves.OrderByDescending(m => m.WordSegment.Length).ToList();
-			Assert.That(sortedByLength.First().WordSegment, Is.EqualTo("josher"));
+			Assert.That(sortedByLength.First().WordSegment, Has.Length.EqualTo(6));
+
+
 		}
 
 		[Test]
-		public void CheatOnKim()
+		public void PlayingGranny()
 		{
 			var board = BoardBuilder.ConstructLargeBoard();
-			foreach (var wordPlacement in new[]
+			var initialPlacements = new[]
 			{
+				new WordPlacement
+				{
+					Direction = Direction.Across,
+					Position = new Position(7, 6),
+					Word = "kerfed"
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Position = new Position(7, 9),
+					Word = "fives"
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Position = new Position(2, 10),
+					Word = "hup"
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Position = new Position(3, 11),
+					Word = "hate"
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Position = new Position(4, 12),
+					Word = "hat"
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Position = new Position(5, 13),
+					Word = "legal"
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Position = new Position(3, 14),
+					Word = "peas"
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Across,
+					Position = new Position(6, 10),
+					Word = "jetes"
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Position = new Position(8, 14),
+					Word = "bong"
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Position = new Position(10, 7),
+					Word = "autos"
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Across,
+					Position = new Position(11, 9),
+					Word = "sax"
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Across,
+					Position = new Position(12, 10),
+					Word = "win"
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Position = new Position(10, 11),
+					Word = "axios"
+				},
+				new WordPlacement
+				{
+					Direction = Direction.Across,
+					Position = new Position(14, 7),
+					Word = "squint"
+				}
+			};
+			foreach(var wp in initialPlacements)
+			{
+				board.Place(wp);
+			}
+			var moveFinder = new MoveFinder();
+			var best = moveFinder.FindBest(board, "llzms?a");
+			Assert.That(best.Score, Is.EqualTo(37));
+			Assert.That(best.WordSegment, Is.EqualTo("mesa"));
+			board.Accept(best);
+			board.Place(
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Position = new Position(1, 9),
+					Word = "yo"
+				}
+			);
+			board.Place(
+				new WordPlacement
+				{
+					Word = "welly",
+					Direction = Direction.Across,
+					Position = new Position(1, 5)
+				}
+			);
+			board.Place(
+				new WordPlacement
+				{
+					Direction = Direction.Across,
+					Position = new Position(0, 3),
+					Word = "troy"
+				}
+			);
+			best = moveFinder.FindBest(board, "zunaner");
+			Assert.That(best.Score, Is.EqualTo(35));
+			Assert.That(best.WordSegment, Is.EqualTo("zen"));
+			board.Accept(best);
+			board.Place(
+				new WordPlacement
+				{
+					Position = new Position(2, 1),
+					Word = "frozen",
+					Direction = Direction.Across
+				}
+			);
+			board.Place(
+				new WordPlacement
+				{
+					Position = new Position(2, 1),
+					Direction = Direction.Down,
+					Word = "fauve"
+				}
+			);
+			board.Place(
+				new WordPlacement
+				{
+					Position = new Position(6, 0),
+					Word = "dig",
+					Direction = Direction.Down
+				}
+			);
+			best = moveFinder.FindBest(board, "nrbretc");
+			// Should place the letters 'be'
+			// at 10, 12
+			Assert.That(best.WordSegment, Is.EqualTo("ben"));
+			Assert.That(best.Score, Is.EqualTo(31));
+			board.Place(
+				new WordPlacement
+				{
+					Position = new Position(9, 5),
+					Direction = Direction.Down,
+					Word = "bren"
+				}
+			);
+		}
+
+		[Test]
+		public void TaraM()
+		{
+			var board = BoardBuilder.ConstructLargeBoard();
+			board.Place(
 				new WordPlacement
 				{
 					Direction = Direction.Across,
 					Position = new Position(7, 3),
-					Word = "dumps"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Down,
-					Position = new Position(3, 7),
-					Word = "gleds"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(5, 6),
-					Word = "servo"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Down,
-					Position = new Position(0, 11),
-					Word = "winces"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(8, 4),
-					Word = "tai"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(3, 11),
-					Word = "chon"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Down,
-					Position = new Position(2, 13),
-					Word = "fogdog"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Down,
-					Position = new Position(6, 14),
-					Word = "novels"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(1, 9),
-					Word = "quid"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(9, 4),
-					Word = "acerate"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Down,
-					Position = new Position(9, 11),
-					Word = "dry"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Down,
-					Position = new Position(0, 8),
-					Word = "jee"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(8, 8),
-					Word = "fib"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Down,
-					Position = new Position(9, 14),
-					Word = "hao"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Down,
-					Position = new Position(6, 5),
-					Word = "emaciate"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(11, 0),
-					Word = "haniwa"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Down,
-					Position = new Position(8, 1),
-					Word = "umiak"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Down,
-					Position = new Position(9, 3),
-					Word = "laity"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(14, 5),
-					Word = "stub"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(11, 7),
-					Word = "pithy"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Down,
-					Position = new Position(7, 0),
-					Word = "axe"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(10, 5),
-					Word = "ire"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(7, 9),
-					Word = "forego"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(0, 11),
-					Word = "wiz"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(0, 6),
-					Word = "raj"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(1, 5),
-					Word = "ne"
+					Word = "gather"
 				}
-			})
-			{
-				board.Place(wordPlacement);
-			}
+			);
 			var moveFinder = new MoveFinder();
-			IEnumerable<Move> moves = moveFinder.ListAll(board, "oo").ToList();
-			var sortedByScore = moves.OrderByDescending(m => m.Score).ToList();
-			var best = sortedByScore.First();
-		}
+			var bestMove = moveFinder.FindBest(board, "eamidan");
+			Assert.That(bestMove.Score, Is.EqualTo(65));
 
-		[Test]
-		public void AmiJ()
-		{
-			var board = BoardBuilder.ConstructLargeBoard();
-			foreach (var wordPlacement in new[]
-			{
+			Assert.That(bestMove.WordSegment, Is.EqualTo("diamante"));
+			board.Accept(bestMove);
+
+			board.Place(
 				new WordPlacement
 				{
 					Direction = Direction.Across,
-					Position = new Position(7, 7),
-					Word = "snow"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Down,
-					Position = new Position(5, 7),
-					Word = "bisque"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(10, 6),
-					Word = "mend"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(6, 9),
-					Word = "pa"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(5, 9),
-					Word = "unite"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Down,
-					Position = new Position(3, 11),
-					Word = "thrip"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(11, 3),
-					Word = "ankus"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(5, 5),
-					Word = "job"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Down,
-					Position = new Position(9, 5),
-					Word = "faker"
-				},
-				new WordPlacement
-				{
-					Direction = Direction.Across,
-					Position = new Position(14, 3),
-					Word = "buy"
+					Position = new Position(3, 2),
+					Word = "kuvasz"
 				}
-			})
-			{
-				board.Place(wordPlacement);
-			}
-			var moveFinder = new MoveFinder();
-			IEnumerable<Move> moves = moveFinder.ListAll(board, "toieiae").ToList();
-			var sortedByScore = moves.OrderByDescending(m => m.Score).ToList();
-			var best = sortedByScore.First();
+			);
+			board.Place(
+				new TilePlacement(
+					new Position(3, 3),
+					new PlacedTile(' ', 'u')
+				)
+			);
+			bestMove = moveFinder.FindBest(board, "ceawjyi");
+			Assert.That(bestMove.Score, Is.EqualTo(34));
+			Assert.That(bestMove.WordSegment, Is.EqualTo("ja"));
+			// But that's not what I played!
+			board.Place(
+				new WordPlacement
+				{
+					Position = new Position(1, 2),
+					Direction = Direction.Down,
+					Word = "jake"
+				}
+			);
+			board.Place(
+				new WordPlacement
+				{
+					Position = new Position(8, 4),
+					Direction = Direction.Across,
+					Word = "hear"
+				}
+			);
+
+			bestMove = moveFinder.FindBest(board, "cwyicho");
+			Assert.That(bestMove.Score, Is.EqualTo(33));
+			Assert.That(bestMove.WordSegment, Is.EqualTo("wych"));
+			board.Accept(bestMove);
 		}
 
 		[Test]

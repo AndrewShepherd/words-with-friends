@@ -26,17 +26,16 @@ namespace WordsWithFriends
 					yield return new PlacedTile(' ', c);
 				}
 			}
-			else
+
+			for(int i = 0; i < _characters.Length; ++i)
 			{
-				for(int i = 0; i < _characters.Length; ++i)
+				if(_characters[i] > 0)
 				{
-					if(_characters[i] > 0)
-					{
-						char c = (char)('a' + i);
-						yield return new PlacedTile(c, c); ;
-					}
+					char c = (char)('a' + i);
+					yield return new PlacedTile(c, c);
 				}
 			}
+
 		}
 
 		public TileBag Remove(PlacedTile placedTile)

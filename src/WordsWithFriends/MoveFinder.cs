@@ -46,36 +46,25 @@
 		private Func<PlacedTile, (bool, int)> GenerateVerticalCrossTester(
 			Board board,
 			Position position,
+			IEnumerable<TilePlacement> placementsAlready,
 			Func<WordSegmentValidity, bool> passingRequirement
 		)
 		{
-			var wordAbove = board.GetStringAbove(position);
-			var wordBelow = board.GetStringBelow(position);
-			if((wordAbove.Length + wordBelow.Length) == 0)
+			PlacedTile?[] boardTiles = board.GetColumn(position.Column);
+			PlacedTile?[] turnPlacements = new PlacedTile?[board.Dimensions.Rows];
+			foreach (var p in placementsAlready.Where(p => p.Position.Column == position.Column))
 			{
-				return _ => (true, 0);
+				turnPlacements[p.Position.Row] = p.PlacedTile;
 			}
-			var placedTiles = board.GetTilesAbove(position)
-				.Concat(board.GetTilesBelow(position))
-				.ToList();
-			return tp =>
-			{
-				if (
-					!passingRequirement(
-						this._wordSegmentLookup.Evaluate($"{wordAbove}{tp.EffectiveChar}{wordBelow}")
-					)
-				)
-				{
-					return (false, 0);
-				}
-				return (
-					true,
-					board.CalculateScore(
-						new[] { new TilePlacement(position, tp) },
-						placedTiles
-					)
-				);
-			};
+			return GenerateChecker(
+				board,
+				position,
+				placementsAlready,
+				passingRequirement,
+				boardTiles,
+				turnPlacements,
+				p => p.Row
+			);
 		}
 
 
@@ -86,28 +75,48 @@
 			Func<WordSegmentValidity, bool> passingRequirement
 		)
 		{
-			// Have to work out the contiguous string from left to right
-			// made up of what's on the board and what's already there
 			PlacedTile?[] boardTiles = board.GetRow(position.Row);
 			PlacedTile?[] turnPlacements = new PlacedTile?[board.Dimensions.Columns];
-			foreach(var p in placementsAlready.Where(p => p.Position.Row == position.Row))
+			foreach (var p in placementsAlready.Where(p => p.Position.Row == position.Row))
 			{
 				turnPlacements[p.Position.Column] = p.PlacedTile;
 			}
-			var leftIndex = position.Column;
+			var indexThatWillBeTested = position.Column;
+			return GenerateChecker(
+				board,
+				position,
+				placementsAlready,
+				passingRequirement,
+				boardTiles,
+				turnPlacements,
+				p => p.Column
+			);
+		}
+
+		private Func<PlacedTile, (bool, int)> GenerateChecker(
+			Board board,
+			Position position,
+			IEnumerable<TilePlacement> placementsAlready,
+			Func<WordSegmentValidity, bool> passingRequirement,
+			PlacedTile?[] boardTiles,
+			PlacedTile?[] turnPlacements,
+			Func<Position, int> getIndexToTest
+		)
+		{
+			var leftIndex = getIndexToTest(position);
 			List<char> leftChars = new List<char>();
 			List<char> rightChars = new List<char>();
 			List<PlacedTile> includedBoardTiles = new List<PlacedTile>();
-			while(
-				(leftIndex > 0) && 
+			while (
+				(leftIndex > 0) &&
 				!(
-					turnPlacements[leftIndex-1] == default
-					&& boardTiles[leftIndex-1] == default
+					turnPlacements[leftIndex - 1] == default
+					&& boardTiles[leftIndex - 1] == default
 				)
 			)
 			{
 				var boardTile = boardTiles[leftIndex - 1];
-				if(boardTile != null)
+				if (boardTile != null)
 				{
 					includedBoardTiles.Add(boardTile);
 					leftChars.Insert(0, boardTile.EffectiveChar);
@@ -115,16 +124,16 @@
 				else
 				{
 					var turnPlacement = turnPlacements[leftIndex - 1];
-					if(turnPlacement != default)
+					if (turnPlacement != default)
 					{
 						leftChars.Insert(0, turnPlacement.EffectiveChar);
 					}
 				}
 				--leftIndex;
 			}
-			var exclusiveRightIndex = position.Column + 1;
-			while(
-				(exclusiveRightIndex < board.Dimensions.Columns) && 
+			var exclusiveRightIndex = getIndexToTest(position) + 1;
+			while (
+				(exclusiveRightIndex < turnPlacements.Length) &&
 				!(
 					turnPlacements[exclusiveRightIndex] == default
 					&& boardTiles[exclusiveRightIndex] == default
@@ -150,8 +159,8 @@
 
 			var leftString = new String(leftChars.ToArray());
 			var rightString = new String(rightChars.ToArray());
-			
-			if(leftString.Length + rightString.Length == 0)
+
+			if (leftString.Length + rightString.Length == 0)
 			{
 				return _ => (true, 0);
 			}
@@ -192,6 +201,10 @@
 			{
 				yield break;
 			}
+			if((extensionSoFar.WordSegment.Length > 1) && (_wordSegmentLookup.Evaluate(extensionSoFar.WordSegment) == WordSegmentValidity.Invalid))
+			{
+				throw new Exception($"Should not be evaluating an invalid word segment ({extensionSoFar.WordSegment})");
+			}
 			char charAtPosition = board.CharAt(position);
 			if (charAtPosition != default)
 			{
@@ -206,6 +219,7 @@
 			var lengthwaysTester = GenerateVerticalCrossTester(
 				board,
 				position,
+				extensionSoFar.TilePlacements,
 				s => s != WordSegmentValidity.Invalid
 			);
 			var aboveString = board.GetStringAbove(position);
@@ -270,6 +284,7 @@
 			var lengthwaysTester = GenerateVerticalCrossTester(
 				board,
 				position,
+				extensionSoFar.TilePlacements,
 				s => s != WordSegmentValidity.Invalid
 			);
 			var belowString = board.GetStringBelow(position);
@@ -321,6 +336,10 @@
 			{
 				yield break;
 			}
+			if ((extensionSoFar.WordSegment.Length > 1) && (_wordSegmentLookup.Evaluate(extensionSoFar.WordSegment) == WordSegmentValidity.Invalid))
+			{
+				throw new Exception("Should not be evaluating an invalid word segment");
+			}
 			char charAtPosition = board.CharAt(position);
 			if(charAtPosition != default)
 			{
@@ -329,6 +348,7 @@
 			var crossTester = GenerateVerticalCrossTester(
 				board,
 				position,
+				Enumerable.Empty<TilePlacement>(),
 				s => s == WordSegmentValidity.CompleteWord
 			);
 			var lengthwaysTester = GenerateHorizontalCrossTester(
@@ -398,6 +418,7 @@
 			var crossTester = GenerateVerticalCrossTester(
 				board,
 				position,
+				Enumerable.Empty<TilePlacement>(),
 				s => s == WordSegmentValidity.CompleteWord
 			);
 			var lengthwaysTester = GenerateHorizontalCrossTester(
@@ -489,7 +510,8 @@
 							extensionLeftStep.StartPosition,
 							extensionLeftStep.WordSegment,
 							Score(board, extensionLeftStep),
-							Direction.Across
+							Direction.Across,
+							extensionLeftStep.TilePlacements
 						);
 					}
 					foreach (
@@ -507,7 +529,8 @@
 								wordSegment2.StartPosition,
 								wordSegment2.WordSegment,
 								Score(board, wordSegment2),
-								Direction.Across
+								Direction.Across,
+								wordSegment2.TilePlacements
 							);
 						}
 					}
@@ -548,7 +571,8 @@
 							extendUpStep.StartPosition,
 							extendUpStep.WordSegment,
 							Score(board, extendUpStep),
-							Direction.Down
+							Direction.Down,
+							extendUpStep.TilePlacements
 						);
 					}
 					foreach (
@@ -566,7 +590,8 @@
 								wordSegment2.StartPosition,
 								wordSegment2.WordSegment,
 								Score(board, wordSegment2),
-								Direction.Down
+								Direction.Down,
+								wordSegment2.TilePlacements
 							);
 						}
 					}
@@ -584,7 +609,7 @@
 			TileBag tileBag = TileBag.FromString(availableCharacters);
 
 			var groupedByRows = wordPlacementPositions.GroupBy(wpp => wpp.Row);
-			foreach(var row in groupedByRows)
+			foreach(var row in groupedByRows.OrderBy(g => g.Key))
 			{
 				var positions = row.OrderBy(p => p.Column);
 				foreach (var move in ListAllForRow(board, tileBag, positions))
@@ -594,7 +619,7 @@
 			}
 
 			var groupedByColumns = wordPlacementPositions.GroupBy(wpp => wpp.Column);
-			foreach(var col in groupedByColumns)
+			foreach(var col in groupedByColumns.OrderBy(g => g.Key))
 			{
 				var positions = col.OrderBy(p => p.Row);
 				foreach(var move in ListAllForColumn(board, tileBag, positions))
@@ -603,5 +628,13 @@
 				}
 			}
 		}
+	}
+
+	public static class MoveFinderExtensions
+	{
+		public static Move FindBest(this MoveFinder moveFinder, Board board, string letters) =>
+			moveFinder.ListAll(board, letters)
+				.OrderByDescending(move => move.Score)
+				.First();
 	}
 }
