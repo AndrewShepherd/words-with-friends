@@ -338,7 +338,7 @@
 			}
 			if ((extensionSoFar.WordSegment.Length > 1) && (_wordSegmentLookup.Evaluate(extensionSoFar.WordSegment) == WordSegmentValidity.Invalid))
 			{
-				throw new Exception("Should not be evaluating an invalid word segment");
+				throw new Exception($"Should not be evaluating an invalid word segment {extensionSoFar.WordSegment}");
 			}
 			char charAtPosition = board.CharAt(position);
 			if(charAtPosition != default)
@@ -468,7 +468,7 @@
 			}
 		}
 
-		private WordSegmentLookup _wordSegmentLookup = new WordSegmentLookup();
+		private static WordSegmentLookup _wordSegmentLookup = new WordSegmentLookup();
 
 		private int Score(Board board, ExtensionResult extensionResult) =>
 			extensionResult.AccumulatedCrossScore +
@@ -608,6 +608,17 @@
 
 			TileBag tileBag = TileBag.FromString(availableCharacters);
 
+			if(wordPlacementPositions.Count == 0)
+			{
+				wordPlacementPositions = new()
+				{
+					new(
+						(board.Dimensions.Rows-1)/2,
+						(board.Dimensions.Columns-1)/2
+					)
+				};
+			}
+
 			var groupedByRows = wordPlacementPositions.GroupBy(wpp => wpp.Row);
 			foreach(var row in groupedByRows.OrderBy(g => g.Key))
 			{
@@ -627,6 +638,8 @@
 					yield return move;
 				}
 			}
+
+
 		}
 	}
 

@@ -4,7 +4,7 @@
 
 	public record Move(
 		Position Position,
-		string WordSegment,
+		string Word,
 		int Score,
 		Direction Direction,
 		IEnumerable<TilePlacement> TilePlacements
