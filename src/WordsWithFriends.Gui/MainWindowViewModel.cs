@@ -16,31 +16,15 @@ namespace WordsWithFriends.Gui
 		private string _pendingScript = String.Empty;
 
 
-		private static string BoardToString(Board board)
-		{
-			StringBuilder sb = new StringBuilder();
-			for(int row = 0; row < board.Dimensions.Rows; ++row)
-			{
-				for(int col = 0; col < board.Dimensions.Columns; ++col)
-				{
-					var c = board.CharAt(new (row, col));
-					sb.Append(c == default ? ' ' : c);
-				}
-				sb.AppendLine();
-			}
-			return sb.ToString();
-		}
-
 		async void LaunchScriptUpdate(string script)
 		{
 			var result = await Task.Run(
 				() => ScriptExecutor.Run(
-					() => BoardBuilder.ConstructLargeBoard(),
+					() => BoardBuilder.ConstructSmallBoard(),
 					script
 				)
 			);
-			this._board = result.Board;
-			this.BoardString = BoardToString(result.Board);
+			this.Board = result.Board;
 			this.RegenerateSuggestions();
 			switch(_currentScriptRunState)
 			{
@@ -81,17 +65,17 @@ namespace WordsWithFriends.Gui
 
 		private string _script = String.Empty;
 
-		private string _boardString;
 		private Board _board = BoardBuilder.ConstructLargeBoard();
-		public string BoardString
+
+		public Board Board
 		{
-			get => _boardString;
+			get => _board;
 			set
 			{
-				if(_boardString != value)
+				if (_board != value)
 				{
-					_boardString = value;
-					PropertyChanged?.Invoke(this, new(nameof(BoardString)));
+					_board = value;
+					this.PropertyChanged?.Invoke(this, new(nameof(Board)));
 				}
 			}
 		}

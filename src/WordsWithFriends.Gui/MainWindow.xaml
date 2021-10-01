@@ -13,7 +13,7 @@
     <Grid DataContext="{StaticResource MainWindowViewModel}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -26,21 +26,11 @@
             FontSize="16"
             AcceptsReturn="True"
          />
-        <Border Grid.Column="1"
-                BorderBrush="Black"
-                BorderThickness="2"
-                Padding="3">
-            <TextBlock
-            Text="{Binding BoardString, Mode=OneWay}"
-            FontFamily="Courier New"
-            FontSize="18"
-            Margin="18"
-            />
-        </Border>
+        <local:BoardView Board="{Binding Board}" Grid.Column="1" />
         <TextBox 
             Text="{Binding AvailableTiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
             FontFamily="Courier New"
-            FontSize="16"
+            FontSize="18"
             AcceptsReturn="False"
             Grid.Row="1"
             Grid.ColumnSpan="2"
@@ -50,6 +40,8 @@
             VerticalScrollBarVisibility="Auto"
             Grid.Row="2"
             Grid.ColumnSpan="2"
+            FontFamily="Courier New"
+            FontSize="18"
          />
     </Grid>
 </Window>
