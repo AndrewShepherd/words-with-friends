@@ -7,6 +7,78 @@ namespace WordsWithFriends
 	public class TestMoveFinder
 	{
 		[Test]
+		public void Mira()
+		{
+			var board = BoardBuilder.ConstructSmallBoard();
+			board.Place(
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Position = new (4, 5),
+					Word = "quaere"
+				}
+			);
+			board.Place(
+				new TilePlacement(
+					new(5, 5),
+					new(' ', 'u')
+				)
+			);
+			var moveFinder = new MoveFinder();
+			var best = moveFinder.FindBest(board, "elixcoy");
+			Assert.That(best.Word, Is.EqualTo("coiler"));
+			Assert.That(best.Position, Is.EqualTo(new Position(8, 0)));
+			board.Accept(best);
+			board.Place(
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Position = new(5, 2),
+					Word = "traiks"
+				}
+			);
+			best = moveFinder.FindBest(board, "xyhlzti");
+			Assert.That(best.Score, Is.EqualTo(30));
+			Assert.That(best.Word, Is.EqualTo("xysti"));
+			board.Accept(best);
+			board.Place(
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Position = new(7, 4),
+					Word = "blat"
+				}
+			);
+			best = moveFinder.FindBest(board, "hlzeeeo");
+			Assert.That(best.Score, Is.EqualTo(68));
+			Assert.That(best.Word, Is.EqualTo("heeze"));
+			board.Accept(best);
+			board.Place(
+				new WordPlacement
+				{
+					Direction = Direction.Down,
+					Position = new(0, 0),
+					Word = "oud"
+				}
+			);
+			best = moveFinder.FindBest(board, "loepfvs");
+			Assert.That(best.Score, Is.EqualTo(28));
+			Assert.That(best.Word, Is.EqualTo("develops"));
+			board.Accept(best);
+			board.Place(
+				new WordPlacement
+				{
+					Direction = Direction.Across,
+					Position = new(1, 3),
+					Word = "wag"
+				}
+			);
+			best = moveFinder.FindBest(board, "fdsnmn?");
+			Assert.That(best.Score, Is.EqualTo(36));
+			Assert.That(best.Word, Is.EqualTo("damns"));
+		}
+
+		[Test]
 		public void SouperSamanther()
 		{
 			var board = BoardBuilder.ConstructSmallBoard();
@@ -178,8 +250,44 @@ namespace WordsWithFriends
 			best = moveFinder.FindBest(board, "tvleakm");
 			Assert.That(best.Score, Is.EqualTo(36));
 			Assert.That(best.Word, Is.EqualTo("em"));
+			board.Accept(best);
+			board.Place(
+				new WordPlacement
+				{
+					Direction = Direction.Across,
+					Word = "nay",
+					Position = new(6, 10)
+				}
+			);
 
-			best = moveFinder.FindBest(board, "tvlakxw");
+			best = moveFinder.FindBest(board, "vkltaxw");
+			Assert.That(best.Score, Is.EqualTo(37));
+			Assert.That(best.Word, Is.EqualTo("wax"));
+			board.Accept(best);
+			board.Place(
+				new WordPlacement()
+				{
+					Direction = Direction.Across,
+					Word = "tains",
+					Position = new (10, 5)
+				}
+			);
+			best = moveFinder.FindBest(board, "tvlkoin");
+			Assert.That(best.Score, Is.EqualTo(35));
+			Assert.That(best.Word, Is.EqualTo("koi"));
+			board.Accept(best);
+			board.Place(
+				new WordPlacement()
+				{
+					Direction = Direction.Across,
+					Word = "zees",
+					Position = new(11, 3)
+				}
+			);
+			best = moveFinder.FindBest(board, "tvlnace");
+			Assert.That(best.Score, Is.EqualTo(42));
+			Assert.That(best.Word, Is.EqualTo("zeal"));
+			board.Accept(best);
 		}
 
 		[Test]
