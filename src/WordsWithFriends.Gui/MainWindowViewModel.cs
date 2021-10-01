@@ -152,17 +152,24 @@ namespace WordsWithFriends.Gui
 
 		void RegenerateSuggestions()
 		{
-			var suggestions = _moveFinder.Value.ListAll(
-				this._board,
-				this._availableTiles
-			).OrderByDescending(s => s.Score)
-			.ToList();
-			StringBuilder sb = new StringBuilder();
-			foreach(var s in suggestions)
+			try
 			{
-				sb.AppendLine(MoveToScriptString(s));
+				var suggestions = _moveFinder.Value.ListAll(
+					this._board,
+					this._availableTiles
+				).OrderByDescending(s => s.Score)
+				.ToList();
+				StringBuilder sb = new StringBuilder();
+				foreach (var s in suggestions)
+				{
+					sb.AppendLine(MoveToScriptString(s));
+				}
+				this.Suggestions = sb.ToString();
 			}
-			this.Suggestions = sb.ToString();
+			catch(Exception ex)
+			{
+				this.Suggestions = ex.ToString();
+			}
 		}
 	}
 }
