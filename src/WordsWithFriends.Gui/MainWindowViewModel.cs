@@ -7,21 +7,40 @@ using System.Threading.Tasks;
 
 namespace WordsWithFriends.Gui
 {
-
+	public enum BoardType { Small, Large }
 
 	public class MainWindowViewModel : INotifyPropertyChanged
 	{
 		enum ScriptRunState { Idle, Running, RunningButStale };
 		private ScriptRunState _currentScriptRunState = ScriptRunState.Idle;
-		private string _pendingScript = String.Empty;
+
+		record BoardGenerationFields(BoardType BoardType, string Script);
+		private BoardGenerationFields _pendingBoardGeneration = new(BoardType.Small, string.Empty);
 
 
-		async void LaunchScriptUpdate(string script)
+		private BoardType _boardType = BoardType.Small;
+		public BoardType BoardType
+		{
+			get => _boardType;
+			set
+			{
+				if(_boardType != value)
+				{
+					_boardType = value;
+					PropertyChanged?.Invoke(this, new(nameof(BoardType)));
+					LaunchScriptUpdate(new(_boardType, _script));
+				}
+			}
+		}
+
+		async void LaunchScriptUpdate(BoardGenerationFields boardGenerationFields)
 		{
 			var result = await Task.Run(
 				() => ScriptExecutor.Run(
-					() => BoardBuilder.ConstructSmallBoard(),
-					script
+					() => boardGenerationFields.BoardType == BoardType.Large 
+						? BoardBuilder.ConstructLargeBoard()
+						: BoardBuilder.ConstructSmallBoard(),
+					boardGenerationFields.Script
 				)
 			);
 			this.Board = result.Board;
@@ -33,25 +52,25 @@ namespace WordsWithFriends.Gui
 					break;
 				case ScriptRunState.RunningButStale:
 					_currentScriptRunState = ScriptRunState.Running;
-					LaunchScriptUpdate(_pendingScript);
+					LaunchScriptUpdate(_pendingBoardGeneration);
 					break;
 			}
 		}
 
-		void RefreshBoard(string script)
+		void RefreshBoard(BoardType boardType, string script)
 		{
 			switch (_currentScriptRunState)
 			{
 				case ScriptRunState.Idle:
 					_currentScriptRunState = ScriptRunState.Running;
-					LaunchScriptUpdate(script);
+					LaunchScriptUpdate(new(boardType, script));
 					break;
 				case ScriptRunState.Running:
-					_pendingScript = script;
+					_pendingBoardGeneration = new(boardType, script);
 					_currentScriptRunState = ScriptRunState.RunningButStale;
 					break;
 				case ScriptRunState.RunningButStale:
-					_pendingScript = script;
+					_pendingBoardGeneration = new(boardType, script);
 					break;
 			}
 		}
@@ -90,7 +109,7 @@ namespace WordsWithFriends.Gui
 					this,
 					new (nameof(Script))
 				);
-				RefreshBoard(_script);
+				RefreshBoard(_boardType, _script);
 			}
 		}
 

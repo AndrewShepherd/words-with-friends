@@ -20,12 +20,27 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TextBox 
+        <Grid Grid.Row="0" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" Orientation="Vertical">
+                <StackPanel.Resources>
+                    <local:ComparisonConverter x:Key="ComparisonConverter" />
+                </StackPanel.Resources>
+                <RadioButton IsChecked="{Binding Path=BoardType, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:BoardType.Small}}">Small</RadioButton>
+                <RadioButton IsChecked="{Binding Path=BoardType, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:BoardType.Large}}">Large</RadioButton>
+            </StackPanel>
+            <TextBox 
             Text="{Binding Script, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
             FontFamily="Courier New"
             FontSize="16"
             AcceptsReturn="True"
+                Grid.Row="1"
          />
+
+        </Grid>
         <local:BoardView Board="{Binding Board}" Grid.Column="1" />
         <TextBox 
             Text="{Binding AvailableTiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
