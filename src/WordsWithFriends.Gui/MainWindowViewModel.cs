@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,14 +12,11 @@ namespace WordsWithFriends.Gui
 
 	public class MainWindowViewModel : INotifyPropertyChanged
 	{
-		enum ScriptRunState { Idle, Running, RunningButStale };
-		private ScriptRunState _currentScriptRunState = ScriptRunState.Idle;
-
-		record BoardGenerationFields(BoardType BoardType, string Script);
-		private BoardGenerationFields _pendingBoardGeneration = new(BoardType.Small, string.Empty);
-
 
 		private BoardType _boardType = BoardType.Small;
+
+		private readonly BoardGenerationObservable _boardGenerationObservable = new();
+
 		public BoardType BoardType
 		{
 			get => _boardType;
@@ -28,56 +26,17 @@ namespace WordsWithFriends.Gui
 				{
 					_boardType = value;
 					PropertyChanged?.Invoke(this, new(nameof(BoardType)));
-					LaunchScriptUpdate(new(_boardType, _script));
+					_boardGenerationObservable.OnNext(new(_boardType, _script));
 				}
-			}
-		}
-
-		async void LaunchScriptUpdate(BoardGenerationFields boardGenerationFields)
-		{
-			var result = await Task.Run(
-				() => ScriptExecutor.Run(
-					() => boardGenerationFields.BoardType == BoardType.Large 
-						? BoardBuilder.ConstructLargeBoard()
-						: BoardBuilder.ConstructSmallBoard(),
-					boardGenerationFields.Script
-				)
-			);
-			this.Board = result.Board;
-			this.RegenerateSuggestions();
-			switch(_currentScriptRunState)
-			{
-				case ScriptRunState.Running:
-					_currentScriptRunState = ScriptRunState.Idle;
-					break;
-				case ScriptRunState.RunningButStale:
-					_currentScriptRunState = ScriptRunState.Running;
-					LaunchScriptUpdate(_pendingBoardGeneration);
-					break;
-			}
-		}
-
-		void RefreshBoard(BoardType boardType, string script)
-		{
-			switch (_currentScriptRunState)
-			{
-				case ScriptRunState.Idle:
-					_currentScriptRunState = ScriptRunState.Running;
-					LaunchScriptUpdate(new(boardType, script));
-					break;
-				case ScriptRunState.Running:
-					_pendingBoardGeneration = new(boardType, script);
-					_currentScriptRunState = ScriptRunState.RunningButStale;
-					break;
-				case ScriptRunState.RunningButStale:
-					_pendingBoardGeneration = new(boardType, script);
-					break;
 			}
 		}
 
 		public MainWindowViewModel()
 		{
-		
+			_boardGenerationObservable.Subscribe(
+				board => this.Board = board
+			);
+
 		}
 
 		public event PropertyChangedEventHandler? PropertyChanged;
@@ -109,7 +68,9 @@ namespace WordsWithFriends.Gui
 					this,
 					new (nameof(Script))
 				);
-				RefreshBoard(_boardType, _script);
+				this._boardGenerationObservable.OnNext(
+					new(_boardType, _script)
+				);
 			}
 		}
 

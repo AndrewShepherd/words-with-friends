@@ -26,7 +26,7 @@ namespace WordsWithFriends
 		{
 			var state = InitialParseState.None;
 			StringBuilder valueString = new();
-			foreach(var c in script)
+			foreach(var c in script.Append(' '))
 			{
 				switch (state)
 				{
