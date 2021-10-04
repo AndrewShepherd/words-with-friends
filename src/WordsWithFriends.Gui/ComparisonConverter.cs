@@ -22,11 +22,9 @@ namespace WordsWithFriends.Gui
 			return value.Equals(parameter);
 		}
 
-		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-		{
-			return value?.Equals(true) == true
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) =>
+			value?.Equals(true) == true
 				? parameter
 				: Binding.DoNothing;
-		}
 	}
 }
