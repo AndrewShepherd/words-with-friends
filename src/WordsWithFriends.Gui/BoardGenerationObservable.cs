@@ -1,35 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Subjects;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WordsWithFriends.Gui
+﻿namespace WordsWithFriends.Gui
 {
-	record BoardGenerationFields(BoardType BoardType, string Script);
+	using System;
+	using System.Reactive.Subjects;
+	using System.Threading.Tasks;
 
-	class BoardGenerationObservable : IObserver<BoardGenerationFields>, IObservable<Board>
+	class BackgroundTaskGenerationObservable<T, U> : IObserver<T>, IObservable<U>
 	{
+		public BackgroundTaskGenerationObservable(IObservable<T> source, Func<T, U> generator)
+		{
+			this._source = source;
+			this._generator = generator;
+		}
+
+		private IObservable<T> _source;
+		private Func<T, U> _generator;
+
+		private readonly ReplaySubject<U> _replaySubject = new();
+
 		enum ScriptRunState { Idle, Running, RunningButStale };
 		private ScriptRunState _currentScriptRunState = ScriptRunState.Idle;
 
-		private BoardGenerationFields _pendingBoardGeneration = new(BoardType.Small, string.Empty);
+		private T? _pendingSource;
 
-
-		private readonly ReplaySubject<Board> _replaySubject;
-
-		async void LaunchScriptUpdate(BoardGenerationFields boardGenerationFields)
+		async void LaunchScriptUpdate(T source)
 		{
 			var result = await Task.Run(
-				() => ScriptExecutor.Run(
-					() => boardGenerationFields.BoardType == BoardType.Large
-						? BoardBuilder.ConstructLargeBoard()
-						: BoardBuilder.ConstructSmallBoard(),
-					boardGenerationFields.Script
-				)
+				() => _generator(source)
 			);
-			this._replaySubject.OnNext(result.Board);
+			this._replaySubject.OnNext(result);
 			switch (_currentScriptRunState)
 			{
 				case ScriptRunState.Running:
@@ -37,27 +35,20 @@ namespace WordsWithFriends.Gui
 					break;
 				case ScriptRunState.RunningButStale:
 					_currentScriptRunState = ScriptRunState.Running;
-					LaunchScriptUpdate(_pendingBoardGeneration);
+					LaunchScriptUpdate(_pendingSource);
 					break;
 			}
 		}
 
-		public BoardGenerationObservable()
+		void IObserver<T>.OnCompleted()
 		{
-			this._replaySubject = new ReplaySubject<Board>();
 		}
 
-		public void OnCompleted()
+		void IObserver<T>.OnError(Exception error)
 		{
-			this._replaySubject.OnCompleted();
 		}
 
-		public void OnError(Exception error)
-		{
-			this._replaySubject.OnError(error);
-		}
-
-		public void OnNext(BoardGenerationFields value)
+		void IObserver<T>.OnNext(T value)
 		{
 			switch (_currentScriptRunState)
 			{
@@ -66,18 +57,32 @@ namespace WordsWithFriends.Gui
 					LaunchScriptUpdate(value);
 					break;
 				case ScriptRunState.Running:
-					_pendingBoardGeneration = value;
+					_pendingSource = value;
 					_currentScriptRunState = ScriptRunState.RunningButStale;
 					break;
 				case ScriptRunState.RunningButStale:
-					_pendingBoardGeneration = value;
+					_pendingSource = value;
 					break;
 			}
 		}
 
-		public IDisposable Subscribe(IObserver<Board> observer)
+		bool _hasSubscribed = false;
+
+		IDisposable IObservable<U>.Subscribe(IObserver<U> observer)
 		{
-			return ((IObservable<Board>)_replaySubject).Subscribe(observer);
+			var rv = this._replaySubject.Subscribe(observer);
+			if(!_hasSubscribed)
+			{
+				this._source.Subscribe(this);
+				_hasSubscribed = true;
+			}
+			return rv;
 		}
+	}
+
+	public static class BackgroundTaskObservableExtensions
+	{
+		public static IObservable<U> TransformOnBackground<T, U>(this IObservable<T> source, Func<T, U> generator) =>
+			new BackgroundTaskGenerationObservable<T, U>(source, generator);
 	}
 }

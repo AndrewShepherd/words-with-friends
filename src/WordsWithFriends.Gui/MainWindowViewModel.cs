@@ -1,21 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Reactive.Subjects;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WordsWithFriends.Gui
+﻿namespace WordsWithFriends.Gui
 {
+	using System;
+	using System.ComponentModel;
+	using System.Linq;
+	using System.Reactive.Linq;
+	using System.Reactive.Subjects;
+	using System.Text;
+
 	public enum BoardType { Small, Large }
+
+	public record SuggestionGenerationFields(Board Board, string AvailableCharacters);
+	record BoardGenerationFields(BoardType BoardType, string Script);
 
 	public class MainWindowViewModel : INotifyPropertyChanged
 	{
-
 		private BoardType _boardType = BoardType.Small;
 
-		private readonly BoardGenerationObservable _boardGenerationObservable = new();
+		private readonly ReplaySubject<string> _scriptReplaySubject = new();
+		private readonly ReplaySubject<BoardType> _boardTypeReplaySubject = new();
+		private readonly ReplaySubject<string> _availableTilesReplaySubject = new();
 
 		public BoardType BoardType
 		{
@@ -26,18 +29,65 @@ namespace WordsWithFriends.Gui
 				{
 					_boardType = value;
 					PropertyChanged?.Invoke(this, new(nameof(BoardType)));
-					_boardGenerationObservable.OnNext(new(_boardType, _script));
+					_boardTypeReplaySubject.OnNext(_boardType);
 				}
+			}
+		}
+
+		private static ExecuteScriptResult ExecuteScript(BoardGenerationFields record) =>
+			ScriptExecutor.Run(
+				record.BoardType == BoardType.Small
+					? BoardBuilder.ConstructSmallBoard
+					: BoardBuilder.ConstructLargeBoard,
+				record.Script
+			);
+
+		private string GenerateSuggestions(SuggestionGenerationFields record)
+		{
+			try
+			{
+				var suggestions = this._moveFinder.Value.ListAll(
+					record.Board,
+					record.AvailableCharacters
+				).OrderByDescending(s => s.Score)
+				.ToList();
+				StringBuilder sb = new StringBuilder();
+				foreach (var s in suggestions)
+				{
+					sb.AppendLine(MoveToScriptString(s));
+				}
+				return sb.ToString();
+			}
+			catch (Exception ex)
+			{
+				return ex.ToString();
 			}
 		}
 
 		public MainWindowViewModel()
 		{
-			_boardGenerationObservable.Subscribe(
-				board => this.Board = board
+			var boardObservable = _boardTypeReplaySubject.CombineLatest(
+				_scriptReplaySubject,
+				(boardType, script) => new BoardGenerationFields(boardType, script)
+			).TransformOnBackground(
+				ExecuteScript
 			);
-
+			
+			boardObservable.Subscribe(
+				result => this.Board = result.Board
+			);
+			boardObservable.CombineLatest(
+				_availableTilesReplaySubject,
+				(board, availableTiles) => new SuggestionGenerationFields(Board, availableTiles)
+			).TransformOnBackground(
+				GenerateSuggestions
+			).Subscribe(
+				result => this.Suggestions = result
+			);
+			_scriptReplaySubject.OnNext(_script);
+			_boardTypeReplaySubject.OnNext(_boardType);
 		}
+
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -68,9 +118,7 @@ namespace WordsWithFriends.Gui
 					this,
 					new (nameof(Script))
 				);
-				this._boardGenerationObservable.OnNext(
-					new(_boardType, _script)
-				);
+				this._scriptReplaySubject.OnNext(_script);
 			}
 		}
 
@@ -87,7 +135,9 @@ namespace WordsWithFriends.Gui
 						this,
 						new(nameof(Script))
 					);
-					RegenerateSuggestions();
+					this._availableTilesReplaySubject.OnNext(
+						this._availableTiles
+					);
 				}
 			}
 		}
@@ -113,27 +163,5 @@ namespace WordsWithFriends.Gui
 
 		static string MoveToScriptString(Move s) =>
 			$"{s.Score}: add {s.Position.Row} {s.Position.Column} {(s.Direction == Direction.Across ? 'a' : 'd')} {s.Word}";
-
-		void RegenerateSuggestions()
-		{
-			try
-			{
-				var suggestions = _moveFinder.Value.ListAll(
-					this._board,
-					this._availableTiles
-				).OrderByDescending(s => s.Score)
-				.ToList();
-				StringBuilder sb = new StringBuilder();
-				foreach (var s in suggestions)
-				{
-					sb.AppendLine(MoveToScriptString(s));
-				}
-				this.Suggestions = sb.ToString();
-			}
-			catch(Exception ex)
-			{
-				this.Suggestions = ex.ToString();
-			}
-		}
 	}
 }
