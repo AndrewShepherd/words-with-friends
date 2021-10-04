@@ -1,10 +1,8 @@
 ﻿namespace WordsWithFriends.Gui
 {
 	using System;
-	using System.ComponentModel;
 	using System.Linq;
 	using System.Reactive.Linq;
-	using System.Reactive.Subjects;
 	using System.Text;
 	using ReactiveUI;
 
@@ -15,11 +13,7 @@
 
 	public class MainWindowViewModel : ReactiveObject
 	{
-
-		private readonly ReplaySubject<string> _availableTilesReplaySubject = new();
-
 		private BoardType _boardType = BoardType.Small;
-
 		public BoardType BoardType
 		{
 			get => _boardType;
@@ -69,12 +63,20 @@
 				ExecuteScript
 			).Select(result => result.Board);
 
-			boardObservable
-				.ToProperty(this, vm => vm.Board, out _board);
+			this._board = boardObservable
+				.ToProperty(
+					this,
+					vm => vm.Board,
+					out _board,
+					this.BoardType == BoardType.Large
+						? BoardBuilder.ConstructLargeBoard
+						: BoardBuilder.ConstructSmallBoard
+				);
 
-			boardObservable.CombineLatest(
-				_availableTilesReplaySubject,
-				(board, availableTiles) => new SuggestionGenerationFields(Board, availableTiles)
+			this._suggestions = this.WhenAnyValue(
+				vm => vm.Board,
+				vm => vm.AvailableTiles,
+				(board, tiles) => new SuggestionGenerationFields(board, tiles)
 			).TransformOnBackground(
 				GenerateSuggestions
 			).ToProperty(this, vm => vm.Suggestions, out _suggestions);
@@ -100,23 +102,14 @@
 			get => _availableTiles;
 			set
 			{
-				if(_availableTiles != value)
-				{
-					this.RaiseAndSetIfChanged(ref _availableTiles, value);
-					this._availableTilesReplaySubject.OnNext(
-						this._availableTiles
-					);
-				}
+				this.RaiseAndSetIfChanged(ref _availableTiles, value);
 			}
 		}
 
 		private Lazy<MoveFinder> _moveFinder = new Lazy<MoveFinder>();
 
 		private ObservableAsPropertyHelper<string> _suggestions;
-		public string Suggestions
-		{
-			get => _suggestions.Value;
-		}
+		public string Suggestions => _suggestions.Value;
 
 		static string MoveToScriptString(Move s) =>
 			$"{s.Score}: add {s.Position.Row} {s.Position.Column} {(s.Direction == Direction.Across ? 'a' : 'd')} {s.Word}";
