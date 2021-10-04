@@ -6,31 +6,26 @@
 	using System.Reactive.Linq;
 	using System.Reactive.Subjects;
 	using System.Text;
+	using ReactiveUI;
 
 	public enum BoardType { Small, Large }
 
 	public record SuggestionGenerationFields(Board Board, string AvailableCharacters);
 	record BoardGenerationFields(BoardType BoardType, string Script);
 
-	public class MainWindowViewModel : INotifyPropertyChanged
+	public class MainWindowViewModel : ReactiveObject
 	{
-		private BoardType _boardType = BoardType.Small;
 
-		private readonly ReplaySubject<string> _scriptReplaySubject = new();
-		private readonly ReplaySubject<BoardType> _boardTypeReplaySubject = new();
 		private readonly ReplaySubject<string> _availableTilesReplaySubject = new();
+
+		private BoardType _boardType = BoardType.Small;
 
 		public BoardType BoardType
 		{
 			get => _boardType;
 			set
 			{
-				if(_boardType != value)
-				{
-					_boardType = value;
-					PropertyChanged?.Invoke(this, new(nameof(BoardType)));
-					_boardTypeReplaySubject.OnNext(_boardType);
-				}
+				this.RaiseAndSetIfChanged(ref _boardType, value);
 			}
 		}
 
@@ -66,59 +61,36 @@
 
 		public MainWindowViewModel()
 		{
-			var boardObservable = _boardTypeReplaySubject.CombineLatest(
-				_scriptReplaySubject,
-				(boardType, script) => new BoardGenerationFields(boardType, script)
+			var boardObservable = this.WhenAnyValue(
+				vm => vm.BoardType,
+				vm => vm.Script,
+				(boardType,script) => new BoardGenerationFields(boardType, script)
 			).TransformOnBackground(
 				ExecuteScript
-			);
-			
-			boardObservable.Subscribe(
-				result => this.Board = result.Board
-			);
+			).Select(result => result.Board);
+
+			boardObservable
+				.ToProperty(this, vm => vm.Board, out _board);
+
 			boardObservable.CombineLatest(
 				_availableTilesReplaySubject,
 				(board, availableTiles) => new SuggestionGenerationFields(Board, availableTiles)
 			).TransformOnBackground(
 				GenerateSuggestions
-			).Subscribe(
-				result => this.Suggestions = result
-			);
-			_scriptReplaySubject.OnNext(_script);
-			_boardTypeReplaySubject.OnNext(_boardType);
+			).ToProperty(this, vm => vm.Suggestions, out _suggestions);
 		}
 
+		private readonly ObservableAsPropertyHelper<Board> _board;
 
-		public event PropertyChangedEventHandler? PropertyChanged;
+		public Board Board => _board.Value;
 
 		private string _script = String.Empty;
-
-		private Board _board = BoardBuilder.ConstructLargeBoard();
-
-		public Board Board
-		{
-			get => _board;
-			set
-			{
-				if (_board != value)
-				{
-					_board = value;
-					this.PropertyChanged?.Invoke(this, new(nameof(Board)));
-				}
-			}
-		}
-
 		public string Script
 		{
 			get => _script;
 			set
 			{
-				_script = value ?? string.Empty;
-				PropertyChanged?.Invoke(
-					this,
-					new (nameof(Script))
-				);
-				this._scriptReplaySubject.OnNext(_script);
+				this.RaiseAndSetIfChanged(ref _script, value);
 			}
 		}
 
@@ -130,11 +102,7 @@
 			{
 				if(_availableTiles != value)
 				{
-					_availableTiles = value;
-					PropertyChanged?.Invoke(
-						this,
-						new(nameof(Script))
-					);
+					this.RaiseAndSetIfChanged(ref _availableTiles, value);
 					this._availableTilesReplaySubject.OnNext(
 						this._availableTiles
 					);
@@ -144,21 +112,10 @@
 
 		private Lazy<MoveFinder> _moveFinder = new Lazy<MoveFinder>();
 
-		private string _suggestions = string.Empty;
+		private ObservableAsPropertyHelper<string> _suggestions;
 		public string Suggestions
 		{
-			get => _suggestions;
-			set
-			{
-				if(_suggestions != value)
-				{
-					_suggestions = value;
-					PropertyChanged?.Invoke(
-						this,
-						new(nameof(Suggestions))
-					);
-				}
-			}
+			get => _suggestions.Value;
 		}
 
 		static string MoveToScriptString(Move s) =>

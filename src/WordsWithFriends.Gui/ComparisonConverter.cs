@@ -24,7 +24,9 @@ namespace WordsWithFriends.Gui
 
 		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
-			return value?.Equals(true) == true ? parameter : new object();
+			return value?.Equals(true) == true
+				? parameter
+				: Binding.DoNothing;
 		}
 	}
 }
