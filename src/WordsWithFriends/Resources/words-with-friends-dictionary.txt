@@ -25531,6 +25531,7 @@ cicoree
 cicorees
 cider
 ciders
+cig
 cigar
 cigaret
 cigarets
@@ -25539,6 +25540,9 @@ cigarettes
 cigarillo
 cigarillos
 cigars
+ciggies
+ciggy
+cigs
 ciguatera
 ciguateras
 cilantro
