@@ -18,7 +18,7 @@
                 <ItemsControl
                     Width="400"
                     Height="400"
-                ItemsSource="{Binding BoardString}"
+                ItemsSource="{Binding BoardCells}"
             >
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -35,9 +35,12 @@
                             BorderThickness="1"
                             Padding="3"
                         >
+                                <Border.Background>
+                                    <SolidColorBrush Color="{Binding BackgroundColor}" />
+                                </Border.Background>
                                 <Viewbox>
                                     <TextBlock
-                                Text="{Binding}"
+                                Text="{Binding Char}"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Center"
                                 FontFamily="Arial"

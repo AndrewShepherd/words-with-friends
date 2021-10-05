@@ -44279,6 +44279,7 @@ dorados
 dorbug
 dorbugs
 dore
+doree
 dorhawk
 dorhawks
 dories
@@ -146478,6 +146479,7 @@ stoutness
 stoutnesses
 stouts
 stove
+stoved
 stovepipe
 stovepipes
 stover
