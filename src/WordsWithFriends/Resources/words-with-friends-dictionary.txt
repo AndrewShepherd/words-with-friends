@@ -36824,6 +36824,8 @@ deaving
 deb
 debacle
 debacles
+debag
+debags
 debar
 debark
 debarkation
