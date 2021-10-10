@@ -41,7 +41,10 @@
          />
 
         </Grid>
-        <local:BoardView Board="{Binding Board}" Grid.Column="1" />
+        <local:BoardView
+           Board="{Binding Board}" 
+           SuggestedMove="{Binding SuggestionsViewModel.SelectedEntry.Move}"
+           Grid.Column="1" />
         <TextBox 
             Text="{Binding AvailableTiles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
             FontFamily="Courier New"
@@ -50,13 +53,60 @@
             Grid.Row="1"
             Grid.ColumnSpan="2"
          />
-        <TextBox
-            Text="{Binding Suggestions, Mode=OneWay}"
-            VerticalScrollBarVisibility="Auto"
-            Grid.Row="2"
-            Grid.ColumnSpan="2"
-            FontFamily="Courier New"
-            FontSize="18"
-         />
+        <DockPanel Grid.Row="2" Grid.ColumnSpan="2" DataContext="{Binding SuggestionsViewModel}">
+            <TextBox
+                Text="{Binding SuggestionQueryResult.Description, Mode=OneWay}"
+                Visibility="{Binding SuggestionErrorVisibility}"
+                VerticalScrollBarVisibility="Auto"
+                Grid.Row="2"
+                Grid.ColumnSpan="2"
+                FontFamily="Courier New"
+                FontSize="18"
+             />
+            <ListView
+                Visibility="{Binding SuggestionListVisibility}"
+                ItemsSource="{Binding Suggestions}"
+                SelectedItem="{Binding SelectedEntry, Mode=OneWayToSource}"
+                >
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel
+                            Orientation="Vertical"
+                                    HorizontalAlignment="Stretch" 
+                                    VerticalAlignment="Stretch"
+                                    IsItemsHost="True"
+                                    />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                TextAlignment="Center"
+                                Text="{Binding Score}"
+                                FontSize="20"
+                            />
+                            <TextBlock
+                                Grid.Column="1"
+                                TextAlignment="Left"
+                                VerticalAlignment="Center"
+                                Text="{Binding Script}"
+                                FontSize="16"
+                                FontFamily="Courier New"
+                                />
+                        </Grid>
+
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </DockPanel>
+
     </Grid>
 </Window>

@@ -3483,6 +3483,7 @@ algorithms
 algors
 algum
 algums
+alhaji
 alias
 aliases
 alibi
@@ -21551,6 +21552,7 @@ cardsharp
 cardsharper
 cardsharpers
 cardsharps
+cardy
 care
 cared
 careen
@@ -121412,6 +121414,7 @@ qindarka
 qindars
 qintar
 qintars
+qis
 qiviut
 qiviuts
 qoph
@@ -132415,6 +132418,7 @@ sabines
 sabins
 sabir
 sabirs
+sabji
 sable
 sablefish
 sablefishes
@@ -172492,6 +172496,8 @@ zeta
 zetas
 zeugma
 zeugmas
+zho
+zhos
 zibeline
 zibelines
 zibelline

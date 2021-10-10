@@ -6,20 +6,29 @@
 	using System.Reactive.Linq;
 	using System.Windows.Media;
 	using System.Collections.Generic;
+	using System.Windows;
 
 	class BoardCell
 	{
 		public char Char { get; set; }
 		public Color BackgroundColor { get; set; }
+
+		public Color ForegroundColor { get; set; } = Colors.Black;
+
+		public FontWeight FontWeight { get; set; } = FontWeights.Normal;
 	}
 
 	class BoardViewModel : ReactiveObject
 	{
 		public BoardViewModel()
 		{
-			this._boardCells = this.WhenAnyValue(vm => vm.Board)
-				.Select(board => BoardToBoardCells(board))
-				.ToProperty(this, vm => vm.BoardCells);
+			this._boardCells = this.WhenAnyValue(
+				vm => vm.Board,
+				vm => vm.SuggestedMove,
+				(board, move) => new { Board = board, Move = move }
+			).TransformOnBackground(
+				values => BoardToBoardCells(values.Board, values.Move)
+			).ToProperty(this, vm => vm.BoardCells);
 		}
 
 		private Board? _board;
@@ -32,10 +41,17 @@
 			}
 		}
 
+		private Move? _suggestedMove;
+		public Move? SuggestedMove
+		{
+			get => _suggestedMove;
+			set => this.RaiseAndSetIfChanged(ref _suggestedMove, value);
+		}
+
 		private readonly ObservableAsPropertyHelper<IEnumerable<BoardCell>> _boardCells;
 		public IEnumerable<BoardCell> BoardCells => _boardCells.Value;
 
-		private static IEnumerable<BoardCell> BoardToBoardCells(Board? board)
+		private static IEnumerable<BoardCell> BoardToBoardCells(Board? board, Move? suggestedMove)
 		{
 			if (board == null)
 			{
@@ -46,7 +62,22 @@
 			{
 				for (int col = 0; col < board.Dimensions.Columns; ++col)
 				{
-					PlacedTile? tile = board.TileAt(new(row, col));
+					Position position = new(row, col);
+					var tp = suggestedMove?.TilePlacements?.Where(tp => tp.Position == position).FirstOrDefault();
+					if(tp != null)
+					{
+						rv.Add(
+							new()
+							{
+								Char = Char.ToUpper(tp.PlacedTile.EffectiveChar),
+								BackgroundColor = Colors.DarkGreen,
+								ForegroundColor = Colors.White,
+								FontWeight = FontWeights.Bold
+							}
+						);
+						continue;
+					}
+					PlacedTile? tile = board.TileAt(position);
 					if (tile != null)
 					{
 						rv.Add(
@@ -55,19 +86,17 @@
 								Char = Char.ToUpper(tile.EffectiveChar),
 								BackgroundColor = Colors.Ivory
 							}
-						); ;
-					}
-					else
-					{
-						var squareBonus = board.SquareBonusAt(new(row, col));
-						rv.Add(
-							new()
-							{
-								Char = ' ',
-								BackgroundColor = SquareBonusToColor(squareBonus)
-							}
 						);
+						continue;
 					}
+					var squareBonus = board.SquareBonusAt(position);
+					rv.Add(
+						new()
+						{
+							Char = ' ',
+							BackgroundColor = SquareBonusToColor(squareBonus)
+						}
+					);
 				}
 			}
 			return rv;

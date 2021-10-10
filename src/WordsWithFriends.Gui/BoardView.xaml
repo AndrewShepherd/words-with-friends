@@ -45,7 +45,13 @@
                                 HorizontalAlignment="Center"
                                 FontFamily="Arial"
                                 FontSize="26"
-                                />
+                                FontWeight="{Binding FontWeight}"
+                                
+                                >
+                                        <TextBlock.Foreground>
+                                            <SolidColorBrush Color="{Binding ForegroundColor}" />
+                                        </TextBlock.Foreground>
+                                    </TextBlock>
                                 </Viewbox>
 
                             </Border>

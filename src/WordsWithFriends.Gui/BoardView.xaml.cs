@@ -36,12 +36,32 @@ namespace WordsWithFriends.Gui
 			}
 		);
 
+		public static DependencyProperty SuggestedMoveDependencyProperty = DependencyProperty.Register(
+			nameof(SuggestedMove),
+			typeof(Move),
+			typeof(BoardView),
+			new()
+			{ 
+				PropertyChangedCallback = BoardView.SuggestedMovePropertyChangedCallback
+			}
+		);
+
+
 		static void BoardPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			var boardView = d as BoardView;
 			if(boardView != null)
 			{
 				boardView.Board = e.NewValue as Board;
+			}
+		}
+
+		static void SuggestedMovePropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			var boardView = d as BoardView;
+			if(boardView != null)
+			{
+				boardView.SuggestedMove = e.NewValue as Move;
 			}
 		}
 
@@ -54,6 +74,12 @@ namespace WordsWithFriends.Gui
 		{
 			get => GetViewModel()?.Board;
 			set => (GetViewModel() ?? new()).Board = value;
+		}
+
+		public Move? SuggestedMove
+		{
+			get => GetViewModel()?.SuggestedMove;
+			set => (GetViewModel() ?? new()).SuggestedMove = value;
 		}
 
 	}
