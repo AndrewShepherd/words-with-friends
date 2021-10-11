@@ -98568,6 +98568,7 @@ noes
 noesis
 noesises
 noetic
+noetical
 nog
 nogg
 nogged
@@ -109512,6 +109513,7 @@ pedler
 pedleries
 pedlers
 pedlery
+pedo
 pedocal
 pedocalic
 pedocals

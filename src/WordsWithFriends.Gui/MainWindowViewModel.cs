@@ -3,8 +3,10 @@
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using System.Reactive;
 	using System.Reactive.Linq;
 	using System.Windows;
+	using System.Windows.Threading;
 	using ReactiveUI;
 
 	public enum BoardType { Small, Large }
@@ -22,13 +24,18 @@
 
 	public class SuggestedMoveEntry
 	{
-		public SuggestedMoveEntry(Move move)
+		public SuggestedMoveEntry(Move move, Action<Move> moveAccepted)
 		{
 			this.Move = move;
+			this.AcceptCommand = ReactiveCommand.Create(
+				() => moveAccepted(move)
+			);
 		}
 
 		public int Score { get; set; }
 		public string Script { get; set; } = String.Empty;
+
+		public ReactiveCommand<Unit, Unit> AcceptCommand { get; init; }
 
 		public Move Move { get; init; }
 	}
@@ -48,8 +55,8 @@
 		public static string MoveToScriptString(Move s) =>
 			$"add {s.Position.Row} {s.Position.Column} {(s.Direction == Direction.Across ? 'a' : 'd')} {s.Word}";
 
-		public static SuggestedMoveEntry MoveToSuggestedMoveEntry(Move s) =>
-			new SuggestedMoveEntry(s)
+		public static SuggestedMoveEntry MoveToSuggestedMoveEntry(Move s, Action<Move> suggestionCallback) =>
+			new SuggestedMoveEntry(s, suggestionCallback)
 			{
 				Score = s.Score,
 				Script = MoveToScriptString(s)
@@ -67,7 +74,7 @@
 						record.Board,
 						record.AvailableCharacters
 					).OrderByDescending(s => s.Score)
-					.Take(40)
+					.Take(50)
 					.ToList(),
 					Description = "Successfully generated moves"
 				};
@@ -86,6 +93,14 @@
 	}
 
 
+	public class SuggestionAcceptedEventArgs : EventArgs
+	{
+		public SuggestionAcceptedEventArgs(Move move)
+		{
+			this.Move = move;
+		}
+		public Move Move { get; init; }
+	}
 
 	public class SuggestionsViewModel : ReactiveObject
 	{
@@ -112,6 +127,8 @@
 			set => this.RaiseAndSetIfChanged(ref _selectedEntry, value);
 		}
 
+		public event EventHandler<SuggestionAcceptedEventArgs>? SuggestionAccepted;
+
 		public SuggestionsViewModel()
 		{
 			var suggestionQueryResultObservable = this.WhenAnyValue(vm => vm.SuggestionQueryResult);
@@ -125,8 +142,15 @@
 				.ToProperty(this, vm => vm.SuggestionListVisibility, out _suggestionListVisibility);
 
 			this._suggestions = suggestionQueryResultObservable
-				.Select(sqr => sqr.Moves.Select(MainWindowViewModelStatics.MoveToSuggestedMoveEntry).ToList())
+				.Select(sqr => sqr.Moves.Select(
+					move => 
+						MainWindowViewModelStatics.MoveToSuggestedMoveEntry(
+							move,
+							move => SuggestionAccepted?.Invoke(this, new(move))
+						)
+				).ToList())
 				.ToProperty(this, vm => vm.Suggestions, out _suggestions);
+
 		}	
 	}
 
@@ -144,6 +168,8 @@
 				this._moveFinder.Value,
 				record
 			);
+
+		private readonly Dispatcher _dispatcher = Dispatcher.CurrentDispatcher;
 
 		public MainWindowViewModel()
 		{
@@ -175,6 +201,17 @@
 			suggestionQueryResultObservable.Subscribe(
 				result => this.SuggestionsViewModel.SuggestionQueryResult = result
 			);
+
+			this.SuggestionsViewModel.SuggestionAccepted += (sender, args) =>
+			{
+				_dispatcher.BeginInvoke(
+					() =>
+					{
+						var script = this.Script;
+						this.Script = $"{script}\n{MainWindowViewModelStatics.MoveToScriptString(args.Move)}";
+					}
+				);
+			};
 		}
 
 		private readonly ObservableAsPropertyHelper<Board> _board;
